@@ -39,8 +39,10 @@ class Ball:
         self.motion = 0
         self.speed = 0
         self.angle = 0
+        self.in_play = False
 
     def draw(self):
+        # if not in play attach to top middle of paddle
         pass
 
     def update(self):
@@ -52,6 +54,8 @@ class Brick:
         self.hits = 0
 
     def draw(self):
+        # if hits == 0: don't draw or collide
+        # different colour based on hit count
         pass
 
     def update(self):
