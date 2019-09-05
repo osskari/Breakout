@@ -1,4 +1,4 @@
-from .objects import *
+from objects import *
 
 import pygame
 from pygame.locals import *
@@ -8,28 +8,36 @@ from OpenGL.GLU import *
 
 
 # globals
+screen_dimensions = (800, 600)
 clock = None
+player = None
 
 
 def init_game():
-    global clock
+    global clock, player
 
     clock = pygame.time.Clock()
     pygame.display.init()
-    pygame.display.set_mode((800, 600), DOUBLEBUF | OPENGL)
+    pygame.display.set_mode(screen_dimensions, DOUBLEBUF | OPENGL)
     glClearColor(0.0, 0.0, 0.0, 1.0)
+
+    player = Paddle(Point(400, 50), 200)
+
     clock.tick()
 
 
 def update():
-    global clock
+    global clock, player
 
     delta_time = clock.tick() / 1000.0
 
     # update stuff
+    player.update(delta_time)
 
 
 def display():
+    global player
+
     glClear(GL_COLOR_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -40,15 +48,31 @@ def display():
     gluOrtho2D(0, 800, 0, 600)
 
     # draw stuff
+    player.draw((1.0, 0.0, 0.0))
 
     pygame.display.flip()
 
 
 def game_loop():
+    global player
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == K_ESCAPE:
+                pygame.quit()
+                quit()
+            elif event.key == K_LEFT:
+                player.direction[0] = True
+            elif event.key == K_RIGHT:
+                player.direction[1] = True
+        elif event.type == pygame.KEYUP:
+            if event.key == K_LEFT:
+                player.direction[0] = False
+            elif event.key == K_RIGHT:
+                player.direction[1] = False
 
     update()
     display()
