@@ -67,11 +67,11 @@ class Paddle:
 
 
 class Ball:
-    def __init__(self, position):
+    def __init__(self, position, speed):
         self.position = position
         self.motion = 0
-        self.speed = 0
-        self.angle = 0
+        self.speed = speed
+        self.angle = 45
         self.in_play = False
         self.radius = 5
 
@@ -93,10 +93,10 @@ class Ball:
     def update(self, delta_time):
         # if not in play attach to top middle of paddle
         if self.in_play:
-            self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * delta_time
+            self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
         else:
             self.motion = Vector(0, 0)
-        self.position = self.motion * delta_time
+        self.position += self.motion * delta_time
 
 
 class Brick:

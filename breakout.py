@@ -23,18 +23,19 @@ def init_game():
     glClearColor(0.0, 0.0, 0.0, 1.0)
 
     player = Paddle(Point(400, 50), 200)
-    ball = Ball(Point(400, 300))
+    ball = Ball(Point(400, 300), 50)
 
     clock.tick()
 
 
 def update():
-    global clock, player
+    global clock, player, ball
 
     delta_time = clock.tick() / 1000.0
 
     # update stuff
     player.update(delta_time)
+    ball.update(delta_time)
 
 
 def display():
@@ -57,7 +58,7 @@ def display():
 
 
 def game_loop():
-    global player
+    global player, ball
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -71,6 +72,8 @@ def game_loop():
                 player.direction[0] = True
             elif event.key == K_RIGHT:
                 player.direction[1] = True
+            elif event.key == K_SPACE:
+                ball.in_play = True
         elif event.type == pygame.KEYUP:
             if event.key == K_LEFT:
                 player.direction[0] = False
