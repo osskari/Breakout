@@ -1,7 +1,9 @@
-import  math as m
+import math as m
 
 import pygame
 from pygame.locals import *
+
+from globals import *
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -60,9 +62,9 @@ class Paddle:
         glPopMatrix()
 
     def update(self, delta_time):
-        if self.direction[0]:
+        if self.direction[PADDLE_LEFT] and self.position.x - 30 > 0:
             self.position -= Vector(self.speed, 0) * delta_time
-        if self.direction[1]:
+        if self.direction[PADDLE_RIGHT] and self.position.x + 30 < WINDOW_WIDTH:
             self.position += Vector(self.speed, 0) * delta_time
 
 

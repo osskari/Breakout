@@ -47,8 +47,8 @@ def display():
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
-    glViewport(0, 0, 800, 600)
-    gluOrtho2D(0, 800, 0, 600)
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+    gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT)
 
     # draw stuff
     player.draw((1.0, 0.0, 0.0))
@@ -57,9 +57,7 @@ def display():
     pygame.display.flip()
 
 
-def game_loop():
-    global player, ball
-
+def events():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -69,9 +67,9 @@ def game_loop():
                 pygame.quit()
                 quit()
             elif event.key == K_LEFT:
-                player.direction[0] = True
+                player.direction[PADDLE_LEFT] = True
             elif event.key == K_RIGHT:
-                player.direction[1] = True
+                player.direction[PADDLE_RIGHT] = True
             elif event.key == K_SPACE:
                 ball.in_play = True
         elif event.type == pygame.KEYUP:
@@ -80,6 +78,11 @@ def game_loop():
             elif event.key == K_RIGHT:
                 player.direction[1] = False
 
+
+def game_loop():
+    # global player, ball
+
+    events()
     update()
     display()
 
