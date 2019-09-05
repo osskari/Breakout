@@ -11,10 +11,11 @@ from OpenGL.GLU import *
 screen_dimensions = (800, 600)
 clock = None
 player = None
+ball = None
 
 
 def init_game():
-    global clock, player
+    global clock, player, ball
 
     clock = pygame.time.Clock()
     pygame.display.init()
@@ -22,6 +23,7 @@ def init_game():
     glClearColor(0.0, 0.0, 0.0, 1.0)
 
     player = Paddle(Point(400, 50), 200)
+    ball = Ball(Point(400, 300))
 
     clock.tick()
 
@@ -36,7 +38,7 @@ def update():
 
 
 def display():
-    global player
+    global player, ball
 
     glClear(GL_COLOR_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
@@ -49,6 +51,7 @@ def display():
 
     # draw stuff
     player.draw((1.0, 0.0, 0.0))
+    ball.draw((1.0, 0.0, 0.0))
 
     pygame.display.flip()
 

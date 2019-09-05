@@ -1,4 +1,4 @@
-import math as m
+import v_math as m
 from .objects import Vector
 
 # a place for vector math and shit

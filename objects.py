@@ -1,3 +1,5 @@
+import  math as m
+
 import pygame
 from pygame.locals import *
 
@@ -65,19 +67,36 @@ class Paddle:
 
 
 class Ball:
-    def __init__(self):
-        self.position = 0
+    def __init__(self, position):
+        self.position = position
         self.motion = 0
         self.speed = 0
         self.angle = 0
         self.in_play = False
+        self.radius = 5
 
-    def draw(self):
+    def draw(self, b_color):
+        glColor3f(b_color[0], b_color[1], b_color[2])
+
+        glPushMatrix()
+
+        glTranslate(self.position.x, self.position.y, 0)
+
+        glPointSize(4)
+
+        glBegin(GL_POINTS)
+        glVertex2f(0, 0)
+        glEnd()
+
+        glPopMatrix()
+
+    def update(self, delta_time):
         # if not in play attach to top middle of paddle
-        pass
-
-    def update(self):
-        pass
+        if self.in_play:
+            self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * delta_time
+        else:
+            self.motion = Vector(0, 0)
+        self.position = self.motion * delta_time
 
 
 class Brick:
