@@ -23,15 +23,14 @@ def init_game():
     glClearColor(0.0, 0.0, 0.0, 1.0)
 
     player = Paddle(Point(400, 50), 200)
-    ball = Ball(Point(400, 300), 50)
+    ball = Ball(Point(400, 300), 100)
 
     clock.tick()
 
 
 def update():
-    global clock, player, ball
 
-    delta_time = clock.tick() / 1000.0
+    delta_time = clock.tick(FPS) / 1000.0
 
     # update stuff
     player.update(delta_time)
@@ -39,7 +38,6 @@ def update():
 
 
 def display():
-    global player, ball
 
     glClear(GL_COLOR_BUFFER_BIT)
     glMatrixMode(GL_PROJECTION)
@@ -80,7 +78,6 @@ def events():
 
 
 def game_loop():
-    # global player, ball
 
     events()
     update()

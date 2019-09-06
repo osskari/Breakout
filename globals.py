@@ -1,4 +1,6 @@
 
+FPS = 60
+
 # Window
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600

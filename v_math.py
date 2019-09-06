@@ -1,6 +1,6 @@
 import math as m
-from objects import Vector
 
+from globals import *
 # a place for vector math and shit
 
 
@@ -15,11 +15,51 @@ def move_player(direction, speed):
     return motion
 
 
-def update_ball(angle, speed):
-
-    acceleration = Vector((-m.sin(angle * m.pi / 180.0), m.cos(angle * m.pi / 180.0)))
-    return acceleration * speed
+def thit(n, point_b, point_a, c):
+    return (n.dot(point_b - point_a))/n.dot(c)
 
 
-def reflection(Vector):
-    pass
+def phit(point_a, t_hit, c):
+    return point_a + c * t_hit
+
+
+def reflection(c, n):
+    norm_n = n.normalize()
+    return c - (norm_n*c.dot(norm_n))*2
+
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+
+
+class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Vector(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other):
+        return Vector(self.x * other, self.y * other)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def dot(self, other):
+        return self.x * other.x + self.y * other.y
+
+    def normalize(self):
+        v_len = m.sqrt(self.x * self.x + self.y * self.y)
+        return Vector(self.x/v_len, self.y/v_len)
