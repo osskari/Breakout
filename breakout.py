@@ -17,6 +17,16 @@ ball = None
 def init_game():
     global clock, player, ball
 
+    p_hit = phit(Point(4, 2),
+         thit(Vector(2, 4), Point(3, 8), Point(4, 2), Vector(1, 3)),
+         Vector(1, 3))
+
+    print(p_hit.x, p_hit.y)
+
+    ref = reflection(Vector(1, 3), Vector(2, 4))
+
+    print(ref.x, ref.y)
+
     clock = pygame.time.Clock()
     pygame.display.init()
     pygame.display.set_mode(screen_dimensions, DOUBLEBUF | OPENGL)
