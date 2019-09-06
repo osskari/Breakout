@@ -11,19 +11,17 @@ from OpenGL.GLU import *
 screen_dimensions = (800, 600)
 clock = None
 player = None
-ball = None
 
 
 def init_game():
-    global clock, player, ball
+    global clock, player
 
     clock = pygame.time.Clock()
     pygame.display.init()
     pygame.display.set_mode(screen_dimensions, DOUBLEBUF | OPENGL)
     glClearColor(0.0, 0.0, 0.0, 1.0)
 
-    player = Paddle(Point(400, 50), 200)
-    ball = Ball(Point(400, 300), 100)
+    player = Paddle(Point(400, 50), 200, Ball(Point(400, 300), 100))
 
     clock.tick()
 
@@ -34,7 +32,7 @@ def update():
 
     # update stuff
     player.update(delta_time)
-    ball.update(delta_time)
+    player.ball.update(delta_time, Point(player.position.x, player.position.y + PADDLE_HEIGHT))
 
 
 def display():
@@ -50,7 +48,7 @@ def display():
 
     # draw stuff
     player.draw((1.0, 0.0, 0.0))
-    ball.draw((1.0, 0.0, 0.0))
+    player.ball.draw((1.0, 0.0, 0.0))
 
     pygame.display.flip()
 
@@ -69,7 +67,7 @@ def events():
             elif event.key == K_RIGHT:
                 player.direction[PADDLE_RIGHT] = True
             elif event.key == K_SPACE:
-                ball.in_play = True
+                player.ball.in_play = True
         elif event.type == pygame.KEYUP:
             if event.key == K_LEFT:
                 player.direction[0] = False
@@ -78,7 +76,6 @@ def events():
 
 
 def game_loop():
-
     events()
     update()
     display()
