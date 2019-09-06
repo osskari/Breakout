@@ -18,7 +18,7 @@ class Paddle:
         self.direction = [False, False]
 
     def draw(self, p_color):
-        glColor3f(p_color[0], p_color[1], p_color[2])
+        glColor3f(p_color[RED], p_color[GREEN], p_color[BLUE])
 
         glPushMatrix()
 
@@ -55,7 +55,7 @@ class Ball:
         self.radius = 5
 
     def draw(self, b_color):
-        glColor3f(b_color[0], b_color[1], b_color[2])
+        glColor3f(b_color[RED], b_color[GREEN], b_color[BLUE])
 
         glPushMatrix()
 
@@ -91,13 +91,51 @@ class Ball:
 
 
 class Brick:
-    def __init__(self):
-        self.hits = 0
+    def __init__(self, position, hits):
+        self.position = self.set_pos(position)
+        self.hits = hits
+        self.colors = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
+
+    def set_pos(self, index):
+        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH // 2) + index.x
+        y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y) - index.y
+        return Point(x, y)
 
     def draw(self):
         # if hits == 0: don't draw or collide
         # different colour based on hit count
-        pass
+        glColor3f(self.colors[self.hits][RED], self.colors[self.hits][GREEN], self.colors[self.hits][BLUE])
+
+        glPushMatrix()
+
+        glTranslate(self.position.x, self.position.y, 0)
+
+        glBegin(GL_TRIANGLES)
+        glVertex2f(0, 0)
+        glVertex2f(BRICK_WIDTH, 0)
+        glVertex2f(0, BRICK_HEIGHT)
+
+        glVertex2f(BRICK_WIDTH, 0)
+        glVertex2f(0, BRICK_HEIGHT)
+        glVertex2f(BRICK_WIDTH, BRICK_HEIGHT)
+        glEnd()
+
+        glPopMatrix()
 
     def update(self):
         pass
+
+
+class Level:
+    def __init__(self, brick_count):
+        self.brick_count = brick_count
+        self.grid = []
+
+        for i in range(GRID_WIDTH):
+            for j in range(GRID_HEIGHT):
+                self.grid.append(Brick(Point(i, j), 2))
+
+    def draw(self):
+        for i in self.grid:
+            if i.position.x == 0 or i.position.x != 0:
+                i.draw()

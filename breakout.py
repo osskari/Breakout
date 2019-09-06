@@ -12,10 +12,11 @@ screen_dimensions = (800, 600)
 clock = None
 player = None
 ball = None
+level = None
 
 
 def init_game():
-    global clock, player, ball
+    global clock, player, ball, level
 
     clock = pygame.time.Clock()
     pygame.display.init()
@@ -24,8 +25,14 @@ def init_game():
 
     player = Paddle(Point(400, 50), 200)
     ball = Ball(Point(400, 300), 100)
+    level = Level(10)
 
     clock.tick()
+
+    # print(GRID_WIDTH, GRID_HEIGHT)
+    # for i in range(int(GRID_WIDTH)):
+    #     for j in range(int(GRID_HEIGHT)):
+    #         print(i, j)
 
 
 def update():
@@ -51,6 +58,7 @@ def display():
     # draw stuff
     player.draw((1.0, 0.0, 0.0))
     ball.draw((1.0, 0.0, 0.0))
+    level.draw()
 
     pygame.display.flip()
 
