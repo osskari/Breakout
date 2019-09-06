@@ -11,12 +11,11 @@ from OpenGL.GLU import *
 
 
 class Paddle:
-    def __init__(self, position, speed, ball):
+    def __init__(self, position, speed):
         self.position = position
         self.motion = Vector(0, 0)
         self.speed = speed
         self.direction = [False, False]
-        self.ball = ball
 
     def draw(self, p_color):
         glColor3f(p_color[0], p_color[1], p_color[2])
