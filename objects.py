@@ -69,12 +69,22 @@ class Ball:
     def update(self, delta_time):
         # if not in play attach to top middle of paddle
         if self.in_play:
-            # self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
-            self.motion = update_ball(self.angle, self.speed)
+            if self.motion == Vector(0, 0):
+                self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
+            self.collision(delta_time)
         else:
             self.motion = Vector(0, 0)
         self.position += self.motion * delta_time
 
+    def collision(self, delta_time):
+        window_points = [Point(0, 0), Point(WINDOW_WIDTH, 0), Point(WINDOW_WIDTH, 0),
+                         Point(WINDOW_WIDTH, WINDOW_HEIGHT)]
+        window_n = (Vector(-1, 0), Vector(1, 0), Vector(0, -1), Vector(0, 1))
+        for p, n in zip(window_points, window_n):
+            print(delta_time)
+            t_hit = thit(n, p, self.position, self.motion * delta_time)
+            if 1 >= t_hit >= 0:
+                self.motion = reflection(self.motion, n)
 
 class Brick:
     def __init__(self):

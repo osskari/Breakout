@@ -15,22 +15,17 @@ def move_player(direction, speed):
     return motion
 
 
-def update_ball(angle, speed):
-    motion = Vector(-m.sin(angle * m.pi / 180.0), m.cos(angle * m.pi / 180.0))
-
-    return motion * speed
+def thit(n, point_b, point_a, c):
+    return (n.dot(point_b - point_a))/n.dot(c)
 
 
 def phit(point_a, t_hit, c):
     return point_a + c * t_hit
 
 
-def thit(n, point_b, point_a, c):
-    return (n.dot(point_b - point_a))/n.dot(c)
-
-
 def reflection(c, n):
-    return c - n*(((c.dot(n)) * 2)/n.dot(n))
+    norm_n = n.normalize()
+    return c - (norm_n*c.dot(norm_n))*2
 
 
 class Point:
@@ -43,9 +38,6 @@ class Point:
 
     def __sub__(self, other):
         return Point(self.x - other.x, self.y - other.y)
-
-    def dotprod(self, other):
-        return self.x * other.x + self.y * other.y
 
 
 class Vector:
@@ -62,6 +54,12 @@ class Vector:
     def __mul__(self, other):
         return Vector(self.x * other, self.y * other)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
     def dot(self, other):
         return self.x * other.x + self.y * other.y
 
+    def normalize(self):
+        v_len = m.sqrt(self.x * self.x + self.y * self.y)
+        return Vector(self.x/v_len, self.y/v_len)
