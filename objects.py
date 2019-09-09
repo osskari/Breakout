@@ -69,18 +69,18 @@ class Ball:
 
         glPopMatrix()
 
-    def update(self, delta_time, paddle_position):
+    def update(self, delta_time, paddle_position, grid):
         # if not in play attach to top middle of paddle
         if self.in_play:
             if self.motion == Vector(0, 0):
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
-            self.collision(delta_time)
+            self.collision(delta_time, grid)
         else:
             self.motion = Vector(0, 0)
             self.position = paddle_position
         self.position += self.motion * delta_time
 
-    def collision(self, delta_time):
+    def collision(self, delta_time, grid):
         window_points = [Point(0, 0), Point(WINDOW_WIDTH, 0), Point(WINDOW_WIDTH, 0),
                          Point(WINDOW_WIDTH, WINDOW_HEIGHT)]
         window_n = (Vector(-1, 0), Vector(1, 0), Vector(0, -1), Vector(0, 1))
@@ -88,6 +88,22 @@ class Ball:
             t_hit = thit(n, p, self.position, self.motion * delta_time)
             if 1 >= t_hit >= 0:
                 self.motion = reflection(self.motion, n)
+        block_bt = Vector(0, 1)
+        block_lr = Vector(1, 0)
+        for p in grid:
+            t_hit_bt = thit(block_bt, p.position, self.position, self.motion * delta_time)
+            t_hit_lr = thit(block_lr, p.position, self.position, self.motion * delta_time)
+            if t_hit_bt < t_hit_lr:
+                if 1 >= t_hit_bt >= 0:
+                    p_hit = phit(self.position, t_hit_bt, self.motion)
+                    if p_hit.is_between_x(p.position.x, p.position.x + BRICK_WIDTH):
+                        self.motion = reflection(self.motion, block_bt)
+                        p.hits -= 1
+            else:
+                if 1 >= t_hit_lr >= 0:
+                    p_hit = phit(self.position, t_hit_bt, self.motion)
+                    if p_hit.is_between_y(p.position.y, p.position.y + BRICK_HEIGHT):
+                        self.motion = reflection(self.motion, block_lr)
 
 
 class Brick:

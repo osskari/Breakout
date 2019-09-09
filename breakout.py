@@ -41,7 +41,7 @@ def update():
 
     # update stuff
     player.update(delta_time)
-    ball.update(delta_time, Point(player.position.x, player.position.y + PADDLE_HEIGHT))
+    ball.update(delta_time, Point(player.position.x, player.position.y + PADDLE_HEIGHT), level.grid)
 
 
 def display():
