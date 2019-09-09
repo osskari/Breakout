@@ -10,38 +10,26 @@ from OpenGL.GLU import *
 # globals
 screen_dimensions = (800, 600)
 clock = None
-player = None
-ball = None
 level = None
 
 
 def init_game():
-    global clock, player, ball, level
+    global clock, level
 
     clock = pygame.time.Clock()
     pygame.display.init()
     pygame.display.set_mode(screen_dimensions, DOUBLEBUF | OPENGL)
     glClearColor(0.0, 0.0, 0.0, 1.0)
 
-    player = Paddle(Point(400, 50), 200)
-    ball = Ball(Point(400, 300), 100)
-    level = Level(10)
+    level = Level(Paddle(Point(400, 50), 200), Ball(Point(400, 300), 100), 10)
 
     clock.tick()
 
-    # print(GRID_WIDTH, GRID_HEIGHT)
-    # for i in range(int(GRID_WIDTH)):
-    #     for j in range(int(GRID_HEIGHT)):
-    #         print(i, j)
-
 
 def update():
-
     delta_time = clock.tick(FPS) / 1000.0
 
-    # update stuff
-    player.update(delta_time)
-    ball.update(delta_time, Point(player.position.x, player.position.y + PADDLE_HEIGHT), level.grid)
+    level.update(delta_time)
 
 
 def display():
@@ -55,9 +43,6 @@ def display():
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT)
 
-    # draw stuff
-    player.draw((1.0, 0.0, 0.0))
-    ball.draw((1.0, 0.0, 0.0))
     level.draw()
 
     pygame.display.flip()
@@ -73,16 +58,16 @@ def events():
                 pygame.quit()
                 quit()
             elif event.key == K_LEFT:
-                player.direction[PADDLE_LEFT] = True
+                level.player.direction[PADDLE_LEFT] = True
             elif event.key == K_RIGHT:
-                player.direction[PADDLE_RIGHT] = True
+                level.player.direction[PADDLE_RIGHT] = True
             elif event.key == K_SPACE:
-                ball.in_play = True
+                level.ball.in_play = True
         elif event.type == pygame.KEYUP:
             if event.key == K_LEFT:
-                player.direction[0] = False
+                level.player.direction[0] = False
             elif event.key == K_RIGHT:
-                player.direction[1] = False
+                level.player.direction[1] = False
 
 
 def game_loop():

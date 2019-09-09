@@ -98,21 +98,27 @@ class Ball:
                     p_hit = phit(self.position, t_hit_bt, self.motion)
                     if p_hit.is_between_x(p.position.x, p.position.x + BRICK_WIDTH):
                         self.motion = reflection(self.motion, block_bt)
-                        p.hits -= 1
+                        # p.hit()
             else:
                 if 1 >= t_hit_lr >= 0:
                     p_hit = phit(self.position, t_hit_bt, self.motion)
                     if p_hit.is_between_y(p.position.y, p.position.y + BRICK_HEIGHT):
                         self.motion = reflection(self.motion, block_lr)
+                        # p.hit()
 
 
 class Brick:
     def __init__(self, position, hits):
         self.position = self.set_pos(position)
         self.hits = hits
-        self.colors = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
+        self.colors = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
 
-    def set_pos(self, index):
+    def hit(self):
+        if self.hits > 0:
+            self.hits -= 1
+
+    @staticmethod
+    def set_pos(index):
         x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH // 2) + index.x
         y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y) - index.y
         return Point(x, y)
@@ -143,7 +149,9 @@ class Brick:
 
 
 class Level:
-    def __init__(self, brick_count):
+    def __init__(self, player, ball, brick_count):
+        self.player = player
+        self.ball = ball
         self.brick_count = brick_count
         self.grid = []
 
@@ -152,6 +160,13 @@ class Level:
                 self.grid.append(Brick(Point(i, j), 2))
 
     def draw(self):
+        self.player.draw((1.0, 0.0, 0.0))
+        self.ball.draw((1.0, 0.0, 0.0))
         for i in self.grid:
-            if i.position.x == 0 or i.position.x != 0:
+            if i:
                 i.draw()
+
+    def update(self, delta_time):
+        self.player.update(delta_time)
+        self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid)
+        self.grid = [i for i in self.grid if i.hits != 0]
