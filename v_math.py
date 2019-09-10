@@ -32,13 +32,36 @@ def reflection(c, n):
     return c - (norm_n*c.dot(norm_n))*2
 
 
-def collision(smallest, normal, point, particle, delta_time, x_offset, y_offset):
+def brick_collision(smallest, normal, point, particle, delta_time, x_offset, y_offset, direction, width, height):
     t_hit = thit(normal, Point(point.position.x + x_offset, point.position.y + y_offset), particle.position, particle.motion)
     if delta_time >= t_hit >= 0:
         p_hit = phit(particle.position, t_hit, particle.motion)
-        if point.position.x <= p_hit.x <= point.position.x + BRICK_WIDTH:
-            if smallest is None or t_hit < smallest[0]:
-                return t_hit, normal, point
+        if direction:
+            if point.position.x <= p_hit.x <= point.position.x + width:
+                if smallest is None or t_hit < smallest[0]:
+                    print(p_hit)
+                    return t_hit, normal, point
+        else:
+            if point.position.y <= p_hit.y <= point.position.y + height:
+                if smallest is None or t_hit < smallest[0]:
+                    print(p_hit)
+                    return t_hit, normal, point
+
+    return smallest
+
+
+def collision(normal, point_b, point_a, c, delta_time, direction, offset, smallest):
+    t_hit = thit(normal, point_b, point_a, c)
+    if delta_time >= t_hit >= 0:
+        p_hit = phit(point_a, t_hit, c)
+        if direction:
+            if point_b.x <= p_hit.x <= offset:
+                if smallest is None or t_hit < smallest[0]:
+                    return t_hit, normal, None
+        else:
+            if point_b.y <= p_hit.y <= offset:
+                if smallest is None or t_hit < smallest[0]:
+                    return t_hit, normal, None
     return smallest
 
 

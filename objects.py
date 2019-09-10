@@ -82,47 +82,23 @@ class Ball:
 
     def collision(self, delta_time, grid):
         smallest = None
-        window_points = [Point(0, 0), Point(WINDOW_WIDTH, 0), Point(WINDOW_WIDTH, 0),
-                         Point(WINDOW_WIDTH, WINDOW_HEIGHT)]
-        window_n = (Vector(-1, 0), Vector(1, 0), Vector(0, -1), Vector(0, 1))
-        for p, n in zip(window_points, window_n):
-            t_hit = thit(n, p, self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                if smallest is None or t_hit < smallest[0]:
-                    smallest = (t_hit, n, None)
+        normal_vert = Vector(0, 1)
+        normal_horiz = Vector(1, 0)
 
-        normal_bt = Vector(0, 1)
-        normal_lr = Vector(1, 0)
+        smallest = collision(normal_vert, Point(0, 0), self.position, self.motion, delta_time, True, WINDOW_WIDTH, smallest)
+        smallest = collision(normal_vert, Point(0, WINDOW_HEIGHT), self.position, self.motion, delta_time, True, WINDOW_WIDTH, smallest)
+        smallest = collision(normal_horiz, Point(0, 0), self.position, self.motion, delta_time, False, WINDOW_HEIGHT, smallest)
+        smallest = collision(normal_horiz, Point(WINDOW_WIDTH, 0), self.position, self.motion, delta_time, False, WINDOW_HEIGHT, smallest)
+
         for p in grid:
             # bottom
-            smallest = collision(smallest, normal_bt, p, self, delta_time, 0, 0)
-            # t_hit = thit(normal_bt, p.position, self.position, self.motion)
-            # if delta_time >= t_hit >= 0:
-            #     p_hit = phit(self.position, t_hit, self.motion)
-            #     if p.position.x <= p_hit.x <= p.position.x + BRICK_WIDTH:
-            #         if smallest is None or t_hit < smallest[0]:
-            #             smallest = (t_hit, normal_bt, p)
+            smallest = brick_collision(smallest, normal_vert, p, self, delta_time, 0, 0, True, BRICK_WIDTH, BRICK_HEIGHT)
             # top
-            t_hit = thit(normal_bt, Point(p.position.x, p.position.y + BRICK_HEIGHT), self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                p_hit = phit(self.position, t_hit, self.motion)
-                if p.position.x <= p_hit.x <= p.position.x + BRICK_WIDTH:
-                    if smallest is None or t_hit < smallest[0]:
-                        smallest = (t_hit, normal_bt, p)
+            smallest = brick_collision(smallest, normal_vert, p, self, delta_time, 0, BRICK_HEIGHT, True, BRICK_WIDTH, BRICK_HEIGHT)
             # left
-            t_hit = thit(normal_lr, p.position, self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                p_hit = phit(self.position, t_hit, self.motion)
-                if p.position.y <= p_hit.y <= p.position.y + BRICK_HEIGHT:
-                    if smallest is None or t_hit < smallest[0]:
-                        smallest = (t_hit, normal_lr, p)
+            smallest = brick_collision(smallest, normal_horiz, p, self, delta_time, 0, 0, False, BRICK_WIDTH, BRICK_HEIGHT)
             # right
-            t_hit = thit(normal_lr, Point(p.position.x + BRICK_WIDTH, p.position.y), self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                p_hit = phit(self.position, t_hit, self.motion)
-                if p.position.y <= p_hit.y <= p.position.y + BRICK_HEIGHT:
-                    if smallest is None or t_hit < smallest[0]:
-                        smallest = (t_hit, normal_lr, p)
+            smallest = brick_collision(smallest, normal_horiz, p, self, delta_time, BRICK_WIDTH, 0, False, BRICK_WIDTH, BRICK_HEIGHT)
 
         if smallest is not None:
             self.motion = reflection(self.motion, smallest[1])
@@ -142,20 +118,20 @@ class Brick:
 
     @staticmethod
     def set_pos(index):
-        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH // 2) + index.x
-        y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y) - index.y
+        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH)
+        y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y)
         return Point(x, y)
 
     def draw(self):
         # if hits == 0: don't draw or collide
         # different colour based on hit count
-        glColor3f(self.colors[self.hits][RED], self.colors[self.hits][GREEN], self.colors[self.hits][BLUE])
-
         glPushMatrix()
 
         glTranslate(self.position.x, self.position.y, 0)
 
         glBegin(GL_TRIANGLES)
+
+        glColor3f(0.0, 0.0, 0.0)
         glVertex2f(0, 0)
         glVertex2f(BRICK_WIDTH, 0)
         glVertex2f(0, BRICK_HEIGHT)
@@ -163,6 +139,15 @@ class Brick:
         glVertex2f(BRICK_WIDTH, 0)
         glVertex2f(0, BRICK_HEIGHT)
         glVertex2f(BRICK_WIDTH, BRICK_HEIGHT)
+
+        glColor3f(self.colors[self.hits][RED], self.colors[self.hits][GREEN], self.colors[self.hits][BLUE])
+        glVertex2f(1, 1)
+        glVertex2f(BRICK_WIDTH - 1, 1)
+        glVertex2f(1, BRICK_HEIGHT - 1)
+
+        glVertex2f(BRICK_WIDTH - 1, 1)
+        glVertex2f(1, BRICK_HEIGHT - 1)
+        glVertex2f(BRICK_WIDTH - 1, BRICK_HEIGHT - 1)
         glEnd()
 
         glPopMatrix()
