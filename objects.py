@@ -69,18 +69,18 @@ class Ball:
 
         glPopMatrix()
 
-    def update(self, delta_time, paddle_position, grid):
+    def update(self, delta_time, paddle_position, grid, paddle):
         # if not in play attach to top middle of paddle
         if self.in_play:
             if self.motion == Vector(0, 0):
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
-            self.collision(delta_time, grid)
+            self.collision(delta_time, grid, paddle)
         else:
             self.motion = Vector(0, 0)
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
         self.position += self.motion * delta_time
 
-    def collision(self, delta_time, grid):
+    def collision(self, delta_time, grid, paddle):
         smallest = None
         window_points = [Point(0, 0), Point(WINDOW_WIDTH, 0), Point(WINDOW_WIDTH, 0),
                          Point(WINDOW_WIDTH, WINDOW_HEIGHT)]
@@ -93,6 +93,7 @@ class Ball:
 
         normal_bt = Vector(0, 1)
         normal_lr = Vector(1, 0)
+        smallest = paddle_collision(smallest, self, delta_time, paddle)
         for p in grid:
             # bottom
             smallest = collision(smallest, normal_bt, p, self, delta_time, 0, 0)
@@ -191,5 +192,5 @@ class Level:
 
     def update(self, delta_time):
         self.player.update(delta_time)
-        self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid)
+        self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid, self.player)
         self.grid = [i for i in self.grid if i.hits != 0]
