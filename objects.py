@@ -75,6 +75,7 @@ class Ball:
             if self.motion == Vector(0, 0):
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
             self.collision(delta_time, grid)
+            self.brick_collision(grid, delta_time)
         else:
             self.motion = Vector(0, 0)
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
@@ -193,3 +194,4 @@ class Level:
         self.player.update(delta_time)
         self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid)
         self.grid = [i for i in self.grid if i.hits != 0]
+
