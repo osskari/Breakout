@@ -32,6 +32,16 @@ def reflection(c, n):
     return c - (norm_n*c.dot(norm_n))*2
 
 
+def collision(smallest, normal, point, particle, delta_time, x_offset, y_offset):
+    t_hit = thit(normal, Point(point.position.x + x_offset, point.position.y + y_offset), particle.position, particle.motion)
+    if delta_time >= t_hit >= 0:
+        p_hit = phit(particle.position, t_hit, particle.motion)
+        if point.position.x <= p_hit.x <= point.position.x + BRICK_WIDTH:
+            if smallest is None or t_hit < smallest[0]:
+                return t_hit, normal, point
+    return smallest
+
+
 class Point:
     def __init__(self, x, y):
         self.x = x
