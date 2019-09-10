@@ -75,6 +75,7 @@ class Ball:
             if self.motion == Vector(0, 0):
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
             self.collision(delta_time, grid)
+            self.brick_collision(grid, delta_time)
         else:
             self.motion = Vector(0, 0)
             self.position = paddle_position
@@ -88,22 +89,38 @@ class Ball:
             t_hit = thit(n, p, self.position, self.motion * delta_time)
             if 1 >= t_hit >= 0:
                 self.motion = reflection(self.motion, n)
-        block_bt = Vector(0, 1)
-        block_lr = Vector(1, 0)
-        for p in grid:
-            t_hit_bt = thit(block_bt, p.position, self.position, self.motion * delta_time)
-            t_hit_lr = thit(block_lr, p.position, self.position, self.motion * delta_time)
-            if t_hit_bt < t_hit_lr:
-                if 1 >= t_hit_bt >= 0:
-                    p_hit = phit(self.position, t_hit_bt, self.motion)
-                    if p_hit.is_between_x(p.position.x, p.position.x + BRICK_WIDTH):
-                        self.motion = reflection(self.motion, block_bt)
-                        p.hits -= 1
+
+
+    def brick_collision(self, bricks, delta_time):
+        lowest_thit = None
+        for b in bricks:
+            bt_vector = (Point(b.position.x + BRICK_WIDTH, b.position.y) - b.position).normalize()
+            lr_vector = (Point(b.position.x, b.position.y + BRICK_HEIGHT) - b.position).normalize()
+
+            bt_thit = thit(bt_vector, b.position, self.position, self.motion * delta_time)
+            lr_thit = thit(lr_vector, b.position, self.position, self.motion * delta_time)
+
+            if bt_thit < lr_thit:
+                if self.position.is_between_x(b.position.x, b.position.x + BRICK_WIDTH)\
+                        and self.position.is_between_y(b.position.y, b.position.y + BRICK_HEIGHT):
+                    if lowest_thit:
+                        if lowest_thit[0] > bt_thit:
+                            lowest_thit = (bt_thit, b, bt_vector)
+                    else:
+                        lowest_thit = (bt_thit, b, bt_vector)
             else:
-                if 1 >= t_hit_lr >= 0:
-                    p_hit = phit(self.position, t_hit_bt, self.motion)
-                    if p_hit.is_between_y(p.position.y, p.position.y + BRICK_HEIGHT):
-                        self.motion = reflection(self.motion, block_lr)
+                if self.position.is_between_y(b.position.y, b.position.y + BRICK_HEIGHT)\
+                        and self.position.is_between_x(b.position.x, b.position.x + BRICK_WIDTH):
+                    if lowest_thit:
+                        if lowest_thit[0] > lr_thit:
+                            lowest_thit = (lr_thit, b, lr_vector)
+                    else:
+                        lowest_thit = (lr_thit, b, lr_vector)
+        if lowest_thit:
+            self.motion = reflection(self.motion, lowest_thit[2])
+            # b = lowest_hit[1]
+            # p.hits -= 1
+            print("hit")
 
 
 class Brick:
@@ -154,4 +171,7 @@ class Level:
     def draw(self):
         for i in self.grid:
             if i.position.x == 0 or i.position.x != 0:
-                i.draw()
+                if i is not None and i.hits == 0:
+                    i = None
+                if i:
+                    i.draw()
