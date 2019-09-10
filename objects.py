@@ -25,22 +25,22 @@ class Paddle:
         glTranslate(self.position.x, self.position.y, 0)
 
         glBegin(GL_TRIANGLES)
-        glVertex2f(-30, -10)
-        glVertex2f(30, -10)
-        glVertex2f(-30, 10)
+        glVertex2f(0, 0)
+        glVertex2f(PADDLE_WIDTH, 0)
+        glVertex2f(0, PADDLE_HEIGHT)
 
-        glVertex2f(-30, 10)
-        glVertex2f(30, -10)
-        glVertex2f(30, 10)
+        glVertex2f(PADDLE_WIDTH, 0)
+        glVertex2f(0, PADDLE_HEIGHT)
+        glVertex2f(PADDLE_WIDTH, PADDLE_HEIGHT)
         glEnd()
 
         glPopMatrix()
 
     def update(self, delta_time):
-        if self.direction[PADDLE_LEFT] and self.position.x - 30 > 0:
+        if self.direction[PADDLE_LEFT] and self.position.x > 0:
             self.motion = Vector(self.speed, 0)
             self.position -= self.motion * delta_time
-        if self.direction[PADDLE_RIGHT] and self.position.x + 30 < WINDOW_WIDTH:
+        if self.direction[PADDLE_RIGHT] and self.position.x + PADDLE_WIDTH < WINDOW_WIDTH:
             self.motion = Vector(self.speed, 0)
             self.position += self.motion * delta_time
 
@@ -77,34 +77,60 @@ class Ball:
             self.collision(delta_time, grid)
         else:
             self.motion = Vector(0, 0)
-            self.position = paddle_position
+            self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
         self.position += self.motion * delta_time
 
     def collision(self, delta_time, grid):
+        smallest = None
         window_points = [Point(0, 0), Point(WINDOW_WIDTH, 0), Point(WINDOW_WIDTH, 0),
                          Point(WINDOW_WIDTH, WINDOW_HEIGHT)]
         window_n = (Vector(-1, 0), Vector(1, 0), Vector(0, -1), Vector(0, 1))
         for p, n in zip(window_points, window_n):
-            t_hit = thit(n, p, self.position, self.motion * delta_time)
-            if 1 >= t_hit >= 0:
-                self.motion = reflection(self.motion, n)
+            t_hit = thit(n, p, self.position, self.motion)
+            if delta_time >= t_hit >= 0:
+                # self.motion = reflection(self.motion, n)
+                if smallest is None or t_hit < smallest[0]:
+                    smallest = (t_hit, n, None)
         block_bt = Vector(0, 1)
         block_lr = Vector(1, 0)
         for p in grid:
-            t_hit_bt = thit(block_bt, p.position, self.position, self.motion * delta_time)
-            t_hit_lr = thit(block_lr, p.position, self.position, self.motion * delta_time)
-            if t_hit_bt < t_hit_lr:
-                if 1 >= t_hit_bt >= 0:
-                    p_hit = phit(self.position, t_hit_bt, self.motion)
-                    if p_hit.is_between_x(p.position.x, p.position.x + BRICK_WIDTH):
-                        self.motion = reflection(self.motion, block_bt)
-                        # p.hit()
-            else:
-                if 1 >= t_hit_lr >= 0:
-                    p_hit = phit(self.position, t_hit_bt, self.motion)
-                    if p_hit.is_between_y(p.position.y, p.position.y + BRICK_HEIGHT):
-                        self.motion = reflection(self.motion, block_lr)
-                        # p.hit()
+            # bottom
+            t_hit = thit(block_bt, p.position, self.position, self.motion)
+            if delta_time >= t_hit >= 0:
+                p_hit = phit(self.position, t_hit, self.motion)
+                if p.position.x <= p_hit.x <= p.position.x + BRICK_WIDTH:
+                    print(p_hit)
+                    if smallest is None or t_hit < smallest[0]:
+                        smallest = (t_hit, block_bt, p)
+            # top
+            t_hit = thit(block_bt, Point(p.position.x, p.position.y + BRICK_HEIGHT), self.position, self.motion)
+            if delta_time >= t_hit >= 0:
+                p_hit = phit(self.position, t_hit, self.motion)
+                if p.position.x <= p_hit.x <= p.position.x + BRICK_WIDTH:
+                    print(p_hit)
+                    if smallest is None or t_hit < smallest[0]:
+                        smallest = (t_hit, block_bt, p)
+            # left
+            t_hit = thit(block_lr, p.position, self.position, self.motion)
+            if delta_time >= t_hit >= 0:
+                p_hit = phit(self.position, t_hit, self.motion)
+                if p.position.y <= p_hit.y <= p.position.y + BRICK_HEIGHT:
+                    print(p_hit)
+                    if smallest is None or t_hit < smallest[0]:
+                        smallest = (t_hit, block_lr, p)
+            # left
+            t_hit = thit(block_lr, Point(p.position.x + BRICK_WIDTH, p.position.y), self.position, self.motion)
+            if delta_time >= t_hit >= 0:
+                p_hit = phit(self.position, t_hit, self.motion)
+                if p.position.y <= p_hit.y <= p.position.y + BRICK_HEIGHT:
+                    print(p_hit)
+                    if smallest is None or t_hit < smallest[0]:
+                        smallest = (t_hit, block_lr, p)
+
+        if smallest is not None:
+            self.motion = reflection(self.motion, smallest[1])
+            if isinstance(smallest[2], Brick):
+                smallest[2].hit()
 
 
 class Brick:

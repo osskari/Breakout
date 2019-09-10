@@ -16,11 +16,15 @@ def move_player(direction, speed):
 
 
 def thit(n, point_b, point_a, c):
-    return (n.dot(point_b - point_a))/n.dot(c)
+    bsuba = point_b - point_a
+    over = n.dot(bsuba)
+    under = n.dot(c)
+    # return (n.dot(point_b - point_a))/n.dot(c)
+    return over / under
 
 
 def phit(point_a, t_hit, c):
-    return point_a + c * t_hit
+    return point_a + (c * t_hit)
 
 
 def reflection(c, n):
@@ -76,7 +80,7 @@ class Vector:
         return "Vector(" + str(self.x) + ", " + str(self.y) + ")"
 
     def dot(self, other):
-        return self.x * other.x + self.y * other.y
+        return (self.x * other.x) + (self.y * other.y)
 
     def normalize(self):
         v_len = m.sqrt(self.x * self.x + self.y * self.y)
