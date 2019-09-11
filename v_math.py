@@ -1,6 +1,8 @@
 import math as m
 
 from globals import *
+
+
 # a place for vector math and shit
 
 
@@ -25,8 +27,7 @@ def phit(point_a, t_hit, c):
 
 def reflection(c, n):
     norm_n = n.normalize()
-    return c - (norm_n*c.dot(norm_n))*2
-
+    return c - (norm_n * c.dot(norm_n)) * 2
 
 def collision(point_b, point_a, c, delta_time, direction, offset, smallest, t_hit):
     if delta_time >= t_hit >= 0:
@@ -40,6 +41,34 @@ def collision(point_b, point_a, c, delta_time, direction, offset, smallest, t_hi
                 if smallest is None or t_hit < smallest[0]:
                     return True
     return False
+
+
+def paddle_collision(smallest, particle, delta_time, paddle):
+    # List of all the normal vectors,
+    # points on a line parallel to the normal vector
+    # and the time that the particle will hit the line
+    n_vectors = [Vector(0, 1), Vector(1, 0), Vector(1, 0)]
+    point_list = [Point(paddle.position.x, paddle.position.y + PADDLE_HEIGHT),              # top point
+                  Point(paddle.position.x + PADDLE_WIDTH, paddle.position.y),               # right point
+                  paddle.position]                                                          # left point
+    t_hit_list = [thit(n_vectors[0], point_list[0], particle.position, particle.motion),    # top time
+                  thit(n_vectors[1], point_list[1], particle.position, particle.motion),    # right time
+                  thit(n_vectors[2], point_list[2], particle.position, particle.motion)]    # left time
+    # run through each time with the corresponding normal vector
+    for n, t_hit in zip(n_vectors, t_hit_list):
+        if delta_time >= t_hit >= 0:
+            # Check if the particle will hit the line in this frame
+            p_hit = phit(particle.position, t_hit, particle.motion)
+            # If the normal vector for that time is pointing up its the top of the paddle
+            if n == Vector(0, 1) and paddle.position.x <= p_hit.x <= paddle.position.x + PADDLE_WIDTH:
+                if smallest is None or t_hit < smallest[0]:
+                    return t_hit, n, paddle
+            # If the normal vector is pointing to the right, its either of the sides
+            elif n == Vector(1, 0) and paddle.position.y <= p_hit.y <= paddle.position.y + PADDLE_HEIGHT:
+                if smallest is None or t_hit < smallest[0]:
+                    return t_hit, n, paddle
+
+    return smallest
 
 
 class Point:
@@ -94,5 +123,4 @@ class Vector:
 
     def normalize(self):
         v_len = m.sqrt(self.x * self.x + self.y * self.y)
-        return Vector(self.x/v_len, self.y/v_len)
-
+        return Vector(self.x / v_len, self.y / v_len)

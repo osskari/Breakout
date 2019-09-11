@@ -68,13 +68,13 @@ class Ball:
         glEnd()
 
         glPopMatrix()
-
-    def update(self, delta_time, paddle_position, grid, borders):
+        
+    def update(self, delta_time, paddle_position, grid, borders, paddle):
         # if not in play attach to top middle of paddle
         if self.in_play:
             if self.motion == Vector(0, 0):
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
-            self.collision(delta_time, grid, borders)
+            self.collision(delta_time, grid, borders, paddle)
         else:
             self.motion = Vector(0, 0)
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
@@ -94,6 +94,8 @@ class Ball:
                 if collision(brick.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
                     print(phit(self.position, t_hit, self.motion))
                     smallest = (t_hit, side.normal, brick)
+                    
+        smallest = paddle_collision(smallest, self, delta_time, paddle)
 
         if smallest is not None:
             self.motion = reflection(self.motion, smallest[1])
