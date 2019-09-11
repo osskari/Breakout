@@ -80,7 +80,7 @@ class Ball:
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
         self.position += self.motion * delta_time
 
-    def collision(self, delta_time, grid, borders):
+    def collision(self, delta_time, grid, borders, paddle):
         smallest = None
 
         for border in borders:
@@ -188,7 +188,7 @@ class Level:
 
     def update(self, delta_time):
         self.player.update(delta_time)
-        self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid, self.borders)
+        self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid, self.borders, self.player)
         self.grid = [i for i in self.grid if i.hits != 0]
 
 
