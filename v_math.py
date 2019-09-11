@@ -18,11 +18,7 @@ def move_player(direction, speed):
 
 
 def thit(n, point_b, point_a, c):
-    bsuba = point_b - point_a
-    over = n.dot(bsuba)
-    under = n.dot(c)
-    # return (n.dot(point_b - point_a))/n.dot(c)
-    return over / under
+    return (n.dot(point_b - point_a))/n.dot(c)
 
 
 def phit(point_a, t_hit, c):
@@ -33,16 +29,18 @@ def reflection(c, n):
     norm_n = n.normalize()
     return c - (norm_n * c.dot(norm_n)) * 2
 
-
-def collision(smallest, normal, point, particle, delta_time, x_offset, y_offset):
-    t_hit = thit(normal, Point(point.position.x + x_offset, point.position.y + y_offset), particle.position,
-                 particle.motion)
+def collision(point_b, point_a, c, delta_time, direction, offset, smallest, t_hit):
     if delta_time >= t_hit >= 0:
-        p_hit = phit(particle.position, t_hit, particle.motion)
-        if point.position.x <= p_hit.x <= point.position.x + BRICK_WIDTH:
-            if smallest is None or t_hit < smallest[0]:
-                return t_hit, normal, point
-    return smallest
+        p_hit = phit(point_a, t_hit, c)
+        if direction:
+            if point_b.x <= p_hit.x <= point_b.x + offset:
+                if smallest is None or t_hit < smallest[0]:
+                    return True
+        else:
+            if point_b.y <= p_hit.y <= point_b.y + offset:
+                if smallest is None or t_hit < smallest[0]:
+                    return True
+    return False
 
 
 def paddle_collision(smallest, particle, delta_time, paddle):

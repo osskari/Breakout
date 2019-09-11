@@ -68,62 +68,34 @@ class Ball:
         glEnd()
 
         glPopMatrix()
-
-    def update(self, delta_time, paddle_position, grid, paddle):
+        
+    def update(self, delta_time, paddle_position, grid, borders, paddle):
         # if not in play attach to top middle of paddle
         if self.in_play:
             if self.motion == Vector(0, 0):
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
-            self.collision(delta_time, grid, paddle)
+            self.collision(delta_time, grid, borders, paddle)
         else:
             self.motion = Vector(0, 0)
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
         self.position += self.motion * delta_time
 
-    def collision(self, delta_time, grid, paddle):
+    def collision(self, delta_time, grid, borders):
         smallest = None
-        window_points = [Point(0, 0), Point(WINDOW_WIDTH, 0), Point(WINDOW_WIDTH, 0),
-                         Point(WINDOW_WIDTH, WINDOW_HEIGHT)]
-        window_n = (Vector(-1, 0), Vector(1, 0), Vector(0, -1), Vector(0, 1))
-        for p, n in zip(window_points, window_n):
-            t_hit = thit(n, p, self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                if smallest is None or t_hit < smallest[0]:
-                    smallest = (t_hit, n, None)
 
-        normal_bt = Vector(0, 1)
-        normal_lr = Vector(1, 0)
+        for border in borders:
+            t_hit = thit(border.normal, border.position, self.position, self.motion)
+            if collision(border.position, self.position, self.motion, delta_time, border.direction, border.offset, smallest, t_hit):
+                smallest = (t_hit, border.normal, None)
+
+        for brick in grid:
+            for side in brick.sides:
+                t_hit = thit(side.normal, side.position, self.position, self.motion)
+                if collision(brick.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
+                    print(phit(self.position, t_hit, self.motion))
+                    smallest = (t_hit, side.normal, brick)
+                    
         smallest = paddle_collision(smallest, self, delta_time, paddle)
-        for p in grid:
-            # bottom
-            smallest = collision(smallest, normal_bt, p, self, delta_time, 0, 0)
-            # t_hit = thit(normal_bt, p.position, self.position, self.motion)
-            # if delta_time >= t_hit >= 0:
-            #     p_hit = phit(self.position, t_hit, self.motion)
-            #     if p.position.x <= p_hit.x <= p.position.x + BRICK_WIDTH:
-            #         if smallest is None or t_hit < smallest[0]:
-            #             smallest = (t_hit, normal_bt, p)
-            # top
-            t_hit = thit(normal_bt, Point(p.position.x, p.position.y + BRICK_HEIGHT), self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                p_hit = phit(self.position, t_hit, self.motion)
-                if p.position.x <= p_hit.x <= p.position.x + BRICK_WIDTH:
-                    if smallest is None or t_hit < smallest[0]:
-                        smallest = (t_hit, normal_bt, p)
-            # left
-            t_hit = thit(normal_lr, p.position, self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                p_hit = phit(self.position, t_hit, self.motion)
-                if p.position.y <= p_hit.y <= p.position.y + BRICK_HEIGHT:
-                    if smallest is None or t_hit < smallest[0]:
-                        smallest = (t_hit, normal_lr, p)
-            # right
-            t_hit = thit(normal_lr, Point(p.position.x + BRICK_WIDTH, p.position.y), self.position, self.motion)
-            if delta_time >= t_hit >= 0:
-                p_hit = phit(self.position, t_hit, self.motion)
-                if p.position.y <= p_hit.y <= p.position.y + BRICK_HEIGHT:
-                    if smallest is None or t_hit < smallest[0]:
-                        smallest = (t_hit, normal_lr, p)
 
         if smallest is not None:
             self.motion = reflection(self.motion, smallest[1])
@@ -136,27 +108,34 @@ class Brick:
         self.position = self.set_pos(position)
         self.hits = hits
         self.colors = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
+        self.sides = self.set_sides()
 
     def hit(self):
         if self.hits > 0:
             self.hits -= 1
 
+    def set_sides(self):
+        return [WindowBorder(self.position, Vector(0, 1), BRICK_WIDTH, True),
+                WindowBorder(self.position, Vector(1, 0), BRICK_HEIGHT, False),
+                WindowBorder(self.position + Point(0, BRICK_HEIGHT), Vector(0, 1), BRICK_WIDTH, True),
+                WindowBorder(self.position + Point(BRICK_WIDTH, 0), Vector(1, 0), BRICK_HEIGHT, False)]
+
     @staticmethod
     def set_pos(index):
-        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH // 2) + index.x
-        y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y) - index.y
+        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH)
+        y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y)
         return Point(x, y)
 
     def draw(self):
         # if hits == 0: don't draw or collide
         # different colour based on hit count
-        glColor3f(self.colors[self.hits][RED], self.colors[self.hits][GREEN], self.colors[self.hits][BLUE])
-
         glPushMatrix()
 
         glTranslate(self.position.x, self.position.y, 0)
 
         glBegin(GL_TRIANGLES)
+
+        glColor3f(0.0, 0.0, 0.0)
         glVertex2f(0, 0)
         glVertex2f(BRICK_WIDTH, 0)
         glVertex2f(0, BRICK_HEIGHT)
@@ -164,6 +143,15 @@ class Brick:
         glVertex2f(BRICK_WIDTH, 0)
         glVertex2f(0, BRICK_HEIGHT)
         glVertex2f(BRICK_WIDTH, BRICK_HEIGHT)
+
+        glColor3f(self.colors[self.hits][RED], self.colors[self.hits][GREEN], self.colors[self.hits][BLUE])
+        glVertex2f(0.5, 0.5)
+        glVertex2f(BRICK_WIDTH - 0.5, 0.5)
+        glVertex2f(0.5, BRICK_HEIGHT - 0.5)
+
+        glVertex2f(BRICK_WIDTH - 0.5, 0.5)
+        glVertex2f(0.5, BRICK_HEIGHT - 0.5)
+        glVertex2f(BRICK_WIDTH - 0.5, BRICK_HEIGHT - 0.5)
         glEnd()
 
         glPopMatrix()
@@ -178,10 +166,18 @@ class Level:
         self.ball = ball
         self.brick_count = brick_count
         self.grid = []
+        self.borders = self.set_borders()
 
         for i in range(GRID_WIDTH):
             for j in range(GRID_HEIGHT):
                 self.grid.append(Brick(Point(i, j), 2))
+
+    @staticmethod
+    def set_borders():
+        return [WindowBorder(Point(0, 0), Vector(0, 1), WINDOW_WIDTH, True),
+                WindowBorder(Point(0, 0), Vector(1, 0), WINDOW_HEIGHT, False),
+                WindowBorder(Point(0, WINDOW_HEIGHT), Vector(0, 1), WINDOW_WIDTH, True),
+                WindowBorder(Point(WINDOW_WIDTH, 0), Vector(1, 0), WINDOW_HEIGHT, False)]
 
     def draw(self):
         self.player.draw((1.0, 0.0, 0.0))
@@ -192,5 +188,13 @@ class Level:
 
     def update(self, delta_time):
         self.player.update(delta_time)
-        self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid, self.player)
+        self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid, self.borders)
         self.grid = [i for i in self.grid if i.hits != 0]
+
+
+class WindowBorder:
+    def __init__(self, position, normal, offset, direction):
+        self.position = position
+        self.normal = normal
+        self.offset = offset
+        self.direction = direction
