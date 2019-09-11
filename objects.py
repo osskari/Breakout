@@ -16,6 +16,12 @@ class Paddle:
         self.motion = Vector(0, 0)
         self.speed = speed
         self.direction = [False, False]
+        self.sides = self.set_sides()
+
+    def set_sides(self):
+        return [WindowBorder(self.position + Point(0, PADDLE_HEIGHT), Vector(0, 1), PADDLE_WIDTH, True),
+                WindowBorder(self.position, Vector(1, 0), PADDLE_HEIGHT, False),
+                WindowBorder(self.position + Point(PADDLE_WIDTH, 0), Vector(1, 0), PADDLE_HEIGHT, False)]
 
     def draw(self, p_color):
         glColor3f(p_color[RED], p_color[GREEN], p_color[BLUE])
@@ -43,6 +49,7 @@ class Paddle:
         if self.direction[PADDLE_RIGHT] and self.position.x + PADDLE_WIDTH < WINDOW_WIDTH:
             self.motion = Vector(self.speed, 0)
             self.position += self.motion * delta_time
+        self.sides = self.set_sides()
 
 
 class Ball:
@@ -82,20 +89,23 @@ class Ball:
 
     def collision(self, delta_time, grid, borders, paddle):
         smallest = None
-
+        # Detect hits with screen borders
         for border in borders:
             t_hit = thit(border.normal, border.position, self.position, self.motion)
             if collision(border.position, self.position, self.motion, delta_time, border.direction, border.offset, smallest, t_hit):
                 smallest = (t_hit, border.normal, None)
-
+        # Detect hits with bricks
         for brick in grid:
             for side in brick.sides:
                 t_hit = thit(side.normal, side.position, self.position, self.motion)
                 if collision(brick.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
                     print(phit(self.position, t_hit, self.motion))
                     smallest = (t_hit, side.normal, brick)
-                    
-        smallest = paddle_collision(smallest, self, delta_time, paddle)
+        # detect hits with player controlled paddle
+        for side in paddle.sides:
+            t_hit = thit(side.normal, side.position, self.position, self.motion)
+            if collision(paddle.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
+                smallest = (t_hit, side.normal, None)
 
         if smallest is not None:
             self.motion = reflection(self.motion, smallest[1])
