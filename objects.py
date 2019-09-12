@@ -57,9 +57,10 @@ class Ball:
         self.position = position
         self.motion = Vector(0, 0)
         self.speed = speed
-        self.angle = 45
+        self.angle = 360
         self.in_play = False
         self.radius = 5
+        self.hit = True
 
     def draw(self, b_color):
         glColor3f(b_color[RED], b_color[GREEN], b_color[BLUE])
@@ -79,14 +80,17 @@ class Ball:
     def update(self, delta_time, paddle_position, grid, borders, paddle):
         # if not in play attach to top middle of paddle
         if self.in_play:
-            if self.motion == Vector(0, 0):
+            if self.hit:
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
+                self.hit = False
             self.motion = self.collision(delta_time, grid, borders, paddle, self.motion, self.position, None)
             self.motion = self.motion.normalize() * self.speed
+                
         else:
             self.motion = Vector(0, 0)
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
         self.position += self.motion * delta_time
+        # print(direction)
 
     def collision(self, delta_time, grid, borders, paddle, motion, position, hit):
         smallest = None
@@ -113,12 +117,15 @@ class Ball:
             p_hit = phit(position, t_hit, motion)
             if hit is None or hit != side:
                 if collision(paddle.position, position, motion, delta_time, side.direction, side.offset, smallest, t_hit):
-                    smallest = (t_hit, side.normal, None, p_hit, side)
+                    smallest = (t_hit, side.normal, paddle_angle(BASE_ANGLE, paddle.position + Point(PADDLE_WIDTH, PADDLE_HEIGHT), phit(self.position, t_hit, self.motion), ANGLE_DELTA, PADDLE_WIDTH)
 
         if smallest is not None:
             tmpmotion = reflection(motion - (smallest[3] - position), smallest[1])
             if isinstance(smallest[2], Brick):
                 smallest[2].hit()
+            elif smallest[2] is not None:
+                self.angle = smallest[2]
+                self.hit = True
 
         if tmpmotion:
             motion = tmpmotion
@@ -151,7 +158,7 @@ class Brick:
 
     @staticmethod
     def set_pos(index):
-        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH)
+        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH//2)
         y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y)
         return Point(x, y)
 

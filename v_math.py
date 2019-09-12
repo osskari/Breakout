@@ -4,7 +4,7 @@ from globals import *
 
 
 def thit(n, point_b, point_a, c):
-    return (n.dot(point_b - point_a))/n.dot(c)
+    return (n.dot(point_b - point_a)) / n.dot(c)
 
 
 def phit(point_a, t_hit, c):
@@ -33,6 +33,10 @@ def collision(point_b, point_a, c, delta_time, direction, offset, smallest, t_hi
                     return True
     # false if any of the statements are false
     return False
+
+
+def paddle_angle(base_angle, r_pos, p_hit, delta_angle, width):
+    return base_angle + ((r_pos.x - p_hit.x) * (delta_angle / width))
 
 
 class Point:
@@ -76,3 +80,6 @@ class Vector:
     def normalize(self):
         v_len = m.sqrt(self.x * self.x + self.y * self.y)
         return Vector(self.x / v_len, self.y / v_len)
+
+
+print(paddle_angle(BASE_ANGLE, Point(400 + PADDLE_WIDTH, 70), Point(430, 70), ANGLE_DELTA, PADDLE_WIDTH))
