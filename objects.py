@@ -132,7 +132,7 @@ class Brick:
 
     @staticmethod
     def set_pos(index):
-        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH)
+        x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH//2)
         y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y)
         return Point(x, y)
 
