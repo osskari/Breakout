@@ -1,13 +1,9 @@
-import math as m
 
 import pygame
-from pygame.locals import *
-
-from globals import *
-from v_math import *
-
 from OpenGL.GL import *
-from OpenGL.GLU import *
+
+from v_math import *
+from globals import *
 
 
 # The paddle that bounces the ball from hitting the bottom plane
