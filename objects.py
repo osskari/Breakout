@@ -57,7 +57,7 @@ class Ball:
         self.position = position
         self.motion = Vector(0, 0)
         self.speed = speed
-        self.angle = 360
+        self.angle = 320
         self.in_play = False
         self.radius = 5
         self.hit = True
@@ -163,7 +163,7 @@ class Brick:
     @staticmethod
     def set_pos(index):
         x = ((BRICK_WIDTH * index.x) + GRID_REMAINDER_WIDTH//2)
-        y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y)
+        y = ((WINDOW_HEIGHT - BRICK_HEIGHT) - BRICK_HEIGHT * index.y) - 2 * BRICK_HEIGHT
         return Point(x, y)
 
     def draw(self):
@@ -201,16 +201,15 @@ class Brick:
 
 
 class Level:
-    def __init__(self, player, ball, brick_count):
+    def __init__(self, player, ball):
         self.player = player
         self.ball = ball
-        self.brick_count = brick_count
         self.grid = []
         self.borders = self.set_borders()
 
         for i in range(GRID_WIDTH):
             for j in range(GRID_HEIGHT):
-                self.grid.append(Brick(Point(i, j), 2))
+                self.grid.append(Brick(Point(i, j), 3))
 
     @staticmethod
     def set_borders():
@@ -220,15 +219,15 @@ class Level:
                 WindowBorder(Point(WINDOW_WIDTH, 0), Vector(1, 0), WINDOW_HEIGHT, False)]
 
     def draw(self):
-        self.player.draw((1.0, 0.0, 0.0))
-        self.ball.draw((1.0, 0.0, 0.0))
+        self.player.draw((1.0, .0, 1.0))
+        self.ball.draw((1.0, 1.0, 1.0))
         for i in self.grid:
             if i:
                 i.draw()
 
     def update(self, delta_time):
-        self.player.update(delta_time)
         self.ball.update(delta_time, Point(self.player.position.x, self.player.position.y + PADDLE_HEIGHT), self.grid, self.borders, self.player)
+        self.player.update(delta_time)
         self.grid = [i for i in self.grid if i.hits != 0]
 
 

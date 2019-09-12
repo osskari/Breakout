@@ -21,13 +21,13 @@ def init_game():
     pygame.display.set_mode(screen_dimensions, DOUBLEBUF | OPENGL)
     glClearColor(0.0, 0.0, 0.0, 1.0)
 
-    level = Level(Paddle(Point(400, 50), 500), Ball(Point(400, 300), 500), 10)
+    level = Level(Paddle(Point(400, 50), 500), Ball(Point(400, 300), 500))
 
     clock.tick()
 
 
 def update():
-    delta_time = clock.tick(FPS) / 1000.0
+    delta_time = clock.tick() / 1000.0
 
     level.update(delta_time)
 
