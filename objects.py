@@ -117,7 +117,7 @@ class Ball:
             p_hit = phit(position, t_hit, motion)
             if hit is None or hit != side:
                 if collision(paddle.position, position, motion, delta_time, side.direction, side.offset, smallest, t_hit):
-                    smallest = (t_hit, side.normal, paddle_angle(BASE_ANGLE, paddle.position + Point(PADDLE_WIDTH, PADDLE_HEIGHT), phit(self.position, t_hit, self.motion), ANGLE_DELTA, PADDLE_WIDTH)
+                    smallest = (t_hit, side.normal, paddle_angle(BASE_ANGLE, paddle.position + Point(PADDLE_WIDTH, PADDLE_HEIGHT), phit(position, t_hit, motion), ANGLE_DELTA, PADDLE_WIDTH), p_hit, side)
 
         if smallest is not None:
             tmpmotion = reflection(motion - (smallest[3] - position), smallest[1])
@@ -126,6 +126,10 @@ class Ball:
             elif smallest[2] is not None:
                 self.angle = smallest[2]
                 self.hit = True
+            else:
+                if smallest[4].position == Point(0, 0) and smallest[4].normal == Vector(0, 1):
+                    pygame.quit()
+                    quit()
 
         if tmpmotion:
             motion = tmpmotion
@@ -144,7 +148,7 @@ class Brick:
         if isinstance(other, Brick):
             return self.position.x == other.position.x and self.position.y == other.position.y
         else:
-            return False;
+            return False
 
     def hit(self):
         if self.hits > 0:
