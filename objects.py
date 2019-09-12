@@ -81,36 +81,49 @@ class Ball:
         if self.in_play:
             if self.motion == Vector(0, 0):
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
-            self.collision(delta_time, grid, borders, paddle)
+            self.motion = self.collision(delta_time, grid, borders, paddle, self.motion, self.position, None)
+            self.motion = self.motion.normalize() * self.speed
         else:
             self.motion = Vector(0, 0)
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
         self.position += self.motion * delta_time
 
-    def collision(self, delta_time, grid, borders, paddle):
+    def collision(self, delta_time, grid, borders, paddle, motion, position, hit):
         smallest = None
+        tmpmotion = None
         # Detect hits with screen borders
         for border in borders:
-            t_hit = thit(border.normal, border.position, self.position, self.motion)
-            if collision(border.position, self.position, self.motion, delta_time, border.direction, border.offset, smallest, t_hit):
-                smallest = (t_hit, border.normal, None)
+            t_hit = thit(border.normal, border.position, position, motion)
+            p_hit = phit(position, t_hit, motion)
+            if hit is None or hit != border:
+                if collision(border.position, position, motion, delta_time, border.direction, border.offset, smallest, t_hit):
+                    smallest = (t_hit, border.normal, None, p_hit, border)
         # Detect hits with bricks
         for brick in grid:
             for side in brick.sides:
-                t_hit = thit(side.normal, side.position, self.position, self.motion)
-                if collision(brick.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
-                    print(phit(self.position, t_hit, self.motion))
-                    smallest = (t_hit, side.normal, brick)
+                t_hit = thit(side.normal, side.position, position, motion)
+                p_hit = phit(position, t_hit, motion)
+                if hit is None or hit != brick:
+                    if collision(brick.position, position, motion, delta_time, side.direction, side.offset, smallest, t_hit):
+                        # print(phit(position, t_hit, motion))
+                        smallest = (t_hit, side.normal, brick, p_hit, brick)
         # detect hits with player controlled paddle
         for side in paddle.sides:
-            t_hit = thit(side.normal, side.position, self.position, self.motion)
-            if collision(paddle.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
-                smallest = (t_hit, side.normal, None)
+            t_hit = thit(side.normal, side.position, position, motion)
+            p_hit = phit(position, t_hit, motion)
+            if hit is None or hit != side:
+                if collision(paddle.position, position, motion, delta_time, side.direction, side.offset, smallest, t_hit):
+                    smallest = (t_hit, side.normal, None, p_hit, side)
 
         if smallest is not None:
-            self.motion = reflection(self.motion, smallest[1])
+            tmpmotion = reflection(motion - (smallest[3] - position), smallest[1])
             if isinstance(smallest[2], Brick):
                 smallest[2].hit()
+
+        if tmpmotion:
+            motion = tmpmotion
+            motion = self.collision(delta_time, grid, borders, paddle, motion, smallest[3], smallest[4])
+        return motion
 
 
 class Brick:
@@ -119,6 +132,12 @@ class Brick:
         self.hits = hits
         self.colors = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
         self.sides = self.set_sides()
+
+    def __eq__(self, other):
+        if isinstance(other, Brick):
+            return self.position.x == other.position.x and self.position.y == other.position.y
+        else:
+            return False;
 
     def hit(self):
         if self.hits > 0:
