@@ -57,9 +57,10 @@ class Ball:
         self.position = position
         self.motion = Vector(0, 0)
         self.speed = speed
-        self.angle = 45
+        self.angle = 360
         self.in_play = False
         self.radius = 5
+        self.hit = True
 
     def draw(self, b_color):
         glColor3f(b_color[RED], b_color[GREEN], b_color[BLUE])
@@ -79,13 +80,16 @@ class Ball:
     def update(self, delta_time, paddle_position, grid, borders, paddle):
         # if not in play attach to top middle of paddle
         if self.in_play:
-            if self.motion == Vector(0, 0):
+            if self.hit:
                 self.motion = Vector(-m.sin(self.angle * m.pi / 180.0), m.cos(self.angle * m.pi / 180.0)) * self.speed
+                print(self.angle)
+                self.hit = False
             self.collision(delta_time, grid, borders, paddle)
         else:
             self.motion = Vector(0, 0)
             self.position = Point(paddle_position.x + PADDLE_WIDTH//2, paddle_position.y + PADDLE_HEIGHT//2)
         self.position += self.motion * delta_time
+        # print(direction)
 
     def collision(self, delta_time, grid, borders, paddle):
         smallest = None
@@ -99,18 +103,22 @@ class Ball:
             for side in brick.sides:
                 t_hit = thit(side.normal, side.position, self.position, self.motion)
                 if collision(brick.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
-                    print(phit(self.position, t_hit, self.motion))
+                    # print(phit(self.position, t_hit, self.motion))
                     smallest = (t_hit, side.normal, brick)
         # detect hits with player controlled paddle
         for side in paddle.sides:
             t_hit = thit(side.normal, side.position, self.position, self.motion)
             if collision(paddle.position, self.position, self.motion, delta_time, side.direction, side.offset, smallest, t_hit):
-                smallest = (t_hit, side.normal, None)
+                smallest = (t_hit, side.normal, paddle_angle(BASE_ANGLE, paddle.position + Point(PADDLE_WIDTH, PADDLE_HEIGHT), phit(self.position, t_hit, self.motion), ANGLE_DELTA, PADDLE_WIDTH))
+                print(paddle.position, phit(self.position, t_hit, self.motion))
 
         if smallest is not None:
             self.motion = reflection(self.motion, smallest[1])
             if isinstance(smallest[2], Brick):
                 smallest[2].hit()
+            elif smallest[2] is not None:
+                self.angle = smallest[2]
+                self.hit = True
 
 
 class Brick:
